@@ -16,11 +16,11 @@ match a with
 | [] -> []
 | h::t -> set_union h (set_all_union t);;
 
-(** 5. Russell's Paradox – this is impossible in OCaml. 
-Expressions of type 'a list cannot in turn be composed of their own type 
-(recursively, with no base type 'a). The resulting error will be produced: 
-"This expression has type 'a but an expression was expected of type 'a list. 
-The type variable 'a occurs inside 'a list"
+(* 5. Russell's Paradox – this is impossible in OCaml. 
+* Expressions of type 'a list cannot in turn be composed of their own type 
+* (recursively, with no base type 'a). The resulting error will be produced: 
+* "This expression has type 'a but an expression was expected of type 'a list. 
+* The type variable 'a occurs inside 'a list"
 *)
 
 (** 6. Computed Fixed Point)
@@ -41,8 +41,8 @@ match p with
 | p -> p_periodic f (p-1) (f x);;
 
 (** 8. Longest Sequence *)
-(** longest sequence [x, s x, s (s x), s (s (s x)), ...] 
-such that p e is true for every element *)
+(* longest sequence [x, s x, s (s x), s (s (s x)), ...] 
+* such that p e is true for every element *)
 
 let whileseq s p x = helper s p x [];; 
 
