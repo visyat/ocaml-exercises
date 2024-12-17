@@ -16,12 +16,14 @@ match a with
 | [] -> []
 | h::t -> set_union h (set_all_union t);;
 
-(** 5. Russell's Paradox – this is impossible in OCaml. 
-* Expressions of type 'a list cannot in turn be composed of their own type 
-* (recursively, with no base type 'a). The resulting error will be produced: 
-* "This expression has type 'a but an expression was expected of type 'a list. 
-* The type variable 'a occurs inside 'a list"
-**)
+(* 
+5. Russell's Paradox – this is impossible in OCaml. 
+Expressions of type 'a list cannot in turn be composed of their own type 
+(recursively, with no base type 'a). 
+The resulting error will be produced: 
+"This expression has type 'a but an expression was expected of type 'a list. 
+The type variable 'a occurs inside 'a list" 
+*)
 
 (** 6. Computed Fixed Point)
 let rec computed_fixed_point eq f x = 
