@@ -25,7 +25,7 @@ The resulting error will be produced:
 The type variable 'a occurs inside 'a list" 
 *)
 
-(** 6. Computed Fixed Point)
+(** 6. Computed Fixed Point *)
 let rec computed_fixed_point eq f x = 
 match x with 
 | x when eq x (f x) -> x
