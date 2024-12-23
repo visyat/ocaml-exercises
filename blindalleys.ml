@@ -20,41 +20,47 @@ match symbol with
 | T _ -> true
 | N _ -> false;;
 
-let rule_contains_terminal rule = 
+let rec rhs_all_terminal_good rhs good = 
+match rhs with 
+| [] -> true
+| h::t when is_terminal h -> rhs_all_terminal_good t good
+| h::t when List.mem h good -> rhs_all_terminal_good t good
+| _ -> false;;
+
+let rule_all_terminal_good rule good = 
 match rule with 
-| lhs, rhs when List.exists is_terminal rhs -> true
-| lhs, rhs -> false;; 
+| lhs, rhs when rhs_all_terminal_good rhs good -> true 
+| _ -> false;;
 
 let get_lhs rule = 
 match rule with 
 | lhs, rhs -> lhs;;
 
-let rec find_good rules sym = 
-match rules with
-| [] -> sym 
-| h::t when rule_contains_terminal h && not (List.mem (get_lhs h) sym) -> find_good t (sym@[(get_lhs h)])
-| h::t -> find_good t sym;;
+let rec pass rules good = 
+match rules with 
+| [] -> good
+| h::t when rule_all_terminal_good h good && not (List.mem (N (get_lhs h)) good) -> pass t (good@[N (get_lhs h)])
+| h::t -> pass t good;;
 
-let is_good sym set_rules = 
-match sym with 
-| sym when List.mem sym (find_good set_rules []) -> true 
-| sym -> false;;
+let rec pass_loop rules new_good old_good = 
+match new_good with 
+| new_good when new_good = old_good -> new_good
+| new_good -> pass_loop rules (pass rules new_good) new_good;;
 
-let rec good_or_terminal rhs set_rules start = 
-match rhs with 
-| [] -> true 
-| h::t when h = start -> good_or_terminal t set_rules start 
-| h::t when is_good h set_rules -> good_or_terminal t set_rules start 
-| h::t when is_terminal h -> good_or_terminal t set_rules start 
-| h::t -> false;;
-
-let rule_valid rule set_rules start = 
+let rec rule_filter rule set_rules = 
 match rule with 
-| lhs, rhs when is_good lhs set_rules -> true
-| lhs, rhs when good_or_terminal rhs set_rules start -> true 
-| lhs, rhs -> false;;
+| lhs, rhs when (List.mem (N lhs) (pass_loop set_rules (pass set_rules []) [])) && (rhs_all_terminal_good rhs (pass_loop set_rules (pass set_rules []) [])) -> true
+| _ -> false;;
 
-(* let filter_blind_alleys g  *)
+let rec filter_rules rules1 rules2 filtered = 
+match rules1 with
+| [] -> filtered
+| h::t when (rule_filter h rules2) -> filter_rules t rules2 (filtered@[h])
+| h::t -> filter_rules t rules2 filtered;;
+
+let filter_blind_alleys g = 
+match g with 
+| start, rules -> start, (filter_rules rules rules []);;
 
 (** --- TESTING --- *)
 let awksub_rules =
@@ -80,14 +86,17 @@ let awksub_rules =
    Num, [T"8"];
    Num, [T"9"]];;  
 
+pass_loop awksub_rules (pass awksub_rules []) [];;
+
 let awksub_grammar = Expr, awksub_rules;; 
-let test1 = rule_valid (Expr, [N Num]) awksub_rules Expr;;
+(* let rule1 = (Expr, [N Expr; N Binop; N Expr]);; *)
+(* let test1 = rule_filter rule1 awksub_rules Expr;; *)
 
 
-(* let awksub_test0 = filter_blind_alleys awksub_grammar = awksub_grammar;;  *)
-(* let awksub_test1 = filter_blind_alleys (Expr, List.tl awksub_rules) = (Expr, List.tl awksub_rules);;  *)
+let awksub_test0 = filter_blind_alleys awksub_grammar = awksub_grammar;; 
+let awksub_test1 = filter_blind_alleys (Expr, List.tl awksub_rules) = (Expr, List.tl awksub_rules);; 
 
-(* let awksub_test2 =
+let awksub_test2 =
   filter_blind_alleys (Expr,
       [Expr, [N Num];
        Expr, [N Lvalue];
@@ -110,5 +119,4 @@ let test1 = rule_valid (Expr, [N Num]) awksub_rules Expr;;
       Num, [T "0"]; Num, [T "1"]; Num, [T "2"]; Num, [T "3"]; Num, [T "4"];
       Num, [T "5"]; Num, [T "6"]; Num, [T "7"]; Num, [T "8"]; Num, [T "9"]]);; 
 
-let awksub_test3 = filter_blind_alleys (Expr, List.tl (List.tl (List.tl awksub_rules))) =
-  filter_blind_alleys (Expr, List.tl (List.tl awksub_rules));; *)
+let awksub_test3 = filter_blind_alleys (Expr, List.tl (List.tl (List.tl awksub_rules))) = filter_blind_alleys (Expr, List.tl (List.tl awksub_rules));;
