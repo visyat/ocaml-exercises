@@ -40,3 +40,15 @@ match x with
 | x when eq x (p_periodic f p x) -> x 
 | x -> computed_periodic_point eq f p (f x);;
 
+(** 8. Longest Sequence *)
+(** longest list [x; s x; s (s x) ...] such that p e is true for every element e in the list *)
+
+let rec whileseq_helper s p x seq = 
+match x with
+| x when p x -> whileseq_helper s p (s x) seq@[x]
+| x -> seq;;
+
+let whileseq s p x = whileseq_helper s p x [];;
+
+whileseq (fun x -> x+1) (fun x -> x < 11) 2;;
+
