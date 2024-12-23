@@ -45,10 +45,12 @@ match x with
 
 let rec whileseq_helper s p x seq = 
 match x with
-| x when p x -> whileseq_helper s p (s x) seq@[x]
+| x when p x -> whileseq_helper s p (s x) (seq@[x])
 | x -> seq;;
 
 let whileseq s p x = whileseq_helper s p x [];;
 
-whileseq (fun x -> x+1) (fun x -> x < 11) 2;;
-
+(** Tests:
+* whileseq (fun x -> x+1) (fun x -> x < 4) 1;;
+* whileseq (fun x -> x+1) (fun x -> x < 11) 2;;
+*) 
