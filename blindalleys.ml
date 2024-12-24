@@ -1,5 +1,5 @@
-(** 9. Filter Blind Alleys *)
-(** returns copy of grammar g with all blind-alley rules – grammar rules
+(** Filter Blind Alley Rules in CFGs *)
+(** returns copy of context-free grammar g with all blind-alley rules – grammar rules
 for which it is impossible to derive a string of terminal symbols – removed; 
 maintain ordering of retained rules *)
 

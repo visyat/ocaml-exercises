@@ -1,0 +1,12 @@
+** HW 1 After Action Summary ** 
+
+From CS 181, I am familiar with the algorithm for finding non-blind-alley rules in a context-free-grammar: 
+parse through rules adding symbols where a rule is found containing only terminal symbols and good symbols 
+(initially none) to the list of good symbols. Finally, filter rules where either the LHS or the RHS contains 
+a symbol that is not in this list of good symbols. 
+
+Initially, I had only 2 passes over the list of rules, collecting symbols with rules containing only terminal
+symbols then (second pass) symbols with rules containing only themselves and those first-level good symbols.
+This initial had correctness issues, especially with the sample test cases where rules at the beginning of the 
+same set were abridged/removed. I eventually broadened my solution to repeat this process until a 
+fixed point for the list of good symbols is reached (potentially large number of iterations).
