@@ -12,8 +12,6 @@ maintain ordering of retained rules *)
 type ('nonterminal, 'terminal) symbol =
 | N of 'nonterminal
 | T of 'terminal;;
-type awksub_nonterminals =
-| Expr | Lvalue | Incrop | Binop | Num;;
 
 let is_terminal symbol = 
 match symbol with
@@ -63,6 +61,9 @@ match g with
 | start, rules -> start, (filter_rules rules rules []);;
 
 (** --- TESTING --- *)
+type awksub_nonterminals =
+| Expr | Lvalue | Incrop | Binop | Num;;
+
 let awksub_rules =
   [Expr, [T"("; N Expr; T")"];
    Expr, [N Num];
@@ -88,11 +89,7 @@ let awksub_rules =
 
 pass_loop awksub_rules (pass awksub_rules []) [];;
 
-let awksub_grammar = Expr, awksub_rules;; 
-(* let rule1 = (Expr, [N Expr; N Binop; N Expr]);; *)
-(* let test1 = rule_filter rule1 awksub_rules Expr;; *)
-
-
+let awksub_grammar = Expr, awksub_rules;;
 let awksub_test0 = filter_blind_alleys awksub_grammar = awksub_grammar;; 
 let awksub_test1 = filter_blind_alleys (Expr, List.tl awksub_rules) = (Expr, List.tl awksub_rules);; 
 

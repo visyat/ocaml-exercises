@@ -8,7 +8,8 @@ let equal_sets a b = subset a b && subset b a;;
 let rec set_union a b = 
 match a with 
 | [] -> b
-| h::t -> h::set_union t b;;
+| h::t when not (List.mem h b) -> h::set_union t b
+| h::t -> set_union t b;;
 
 (** 4. Union of All Sets *)
 let rec set_all_union a = 
@@ -49,8 +50,3 @@ match x with
 | x -> seq;;
 
 let whileseq s p x = whileseq_helper s p x [];;
-
-(** Tests:
-* whileseq (fun x -> x+1) (fun x -> x < 4) 1;;
-* whileseq (fun x -> x+1) (fun x -> x < 11) 2;;
-*) 
