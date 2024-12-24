@@ -33,7 +33,30 @@ match gram1 with
 | start, rules -> start, (fun sym -> (group_rhs rules sym []));;
 
 (** 2. Traverse Parse Tree *)
+type ('nonterminal, 'terminal) parse_tree =
+  | Node of 'nonterminal * ('nonterminal, 'terminal) parse_tree list
+  | Leaf of 'terminal;;
 
+(* handles parent nodes ... 
+   if encounters leaf, appends to the leaves list, 
+    if encounters tree node, passes children to child handler ... *)
+let rec traverse_parent tree leaves = 
+match tree with 
+| Node (node, children) -> traverse_children children leaves
+| Leaf leaf -> leaves@[leaf]
+(* handles child nodes (stored in a list) ...
+   have to recursively traverse list, passing each node/leaf 
+   to the parent handler as it is reached, before continuing to 
+   next child in list ...*)
+and traverse_children children leaves = 
+match children with 
+| [] -> leaves 
+(* iteration through child nodes ... 
+   on each child, pass to parent handler, which appends any leaves 
+   found to the list ...*)
+| h::t -> traverse_children t (leaves@(traverse_parent h []));;
+
+let parse_tree_leaves tree = traverse_parent tree [];;
 
 (** --- TESTING --- *)
 type awksub_nonterminals =
@@ -63,3 +86,6 @@ let awksub_rules =
    Num, [T"9"]];;  
 let awksub_grammar = Expr, awksub_rules;;
 let new_grammar = convert_grammar awksub_grammar;;
+
+let testTree = Node ("+", [Leaf 3; Node ("*", [Leaf 4; Leaf 5])]);; (*(string, int) parse_tree*) (*= [3; 4; 5];;*) 
+let leaves = parse_tree_leaves testTree;;
