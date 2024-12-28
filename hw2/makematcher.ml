@@ -8,29 +8,25 @@ match symbol with
 | T _ -> true
 | N _ -> false;;
 
-let rec iterate_rule_terms rule frag prefix pred = 
-match rule with 
-| [] -> prefix
-| h::t when is_terminal h && List.mem h frag -> prefix@[h]
-| h::t when is_terminal h -> prefix 
-| h::t -> iterate_rule_terms t frag (prefix@[iterate_rules (pred h) frag [] pred]) pred
-and iterate_rules rules frag prefix pred = 
+let extract_nonterminal sym = 
+match sym with 
+| N x -> x
+| T _ -> failwith "Not a nonterminal";;
+let extract_terminal sym = 
+match sym with 
+| T x -> x
+| N _ -> failwith "Not a terminal";;
+
+let rec iterate_rules rules trace pred frag = 
 match rules with 
-| [] -> prefix 
-| h::t -> prefix@[iterate_rule_terms h frag [] pred];;
-
-(* start traversing first rule of (prod start) ...
-  once get to end, stop and check with accept function *)
-let rec top_level start_rules frag pred = 
-match start_rules with 
-| [] -> None (* if there are no valid prefixes ... *)
-| h::t -> iterate_rule_terms h frag [] pred;;
-(* once compose a valid prefix, check if suffix can be accepted ...
-if yes, return accept suffix; if not, continue to next start_rule *)
-
-let make_matcher gram = 
-match gram with
-| start, pred -> (fun frag accept -> top_level (pred start) frag pred);;
+| [] -> trace 
+| h::t -> iterate_rules t (trace@(iterate_rule_terms h [] pred frag)) pred frag
+and iterate_rule_terms rule trace pred frag = 
+match rule with 
+| [] -> trace
+| h::t when is_terminal h && (List.mem (extract_terminal h) frag) -> trace@[extract_terminal h]
+| h::t when not (is_terminal h) -> iterate_rule_terms t (trace@(iterate_rules (pred (extract_nonterminal h)) [] pred frag)) pred frag
+| h::t -> iterate_rule_terms t trace pred frag;;
 
 (* should output a function of the type fun (accept, frag) -> ... *)
 
@@ -66,8 +62,15 @@ let awkish_grammar =
     | Num ->
       [[T"0"]; [T"1"]; [T"2"]; [T"3"]; [T"4"];
       [T"5"]; [T"6"]; [T"7"]; [T"8"]; [T"9"]]);;
+(* testing helper functions ... *)
 
-let test0 = ((make_matcher awkish_grammar accept_all ["ouch"]) = None);;
+let test_tl gram frag = 
+  match gram with 
+  | start, pred -> iterate_rules (pred start) [] pred frag;;
+
+let test0 = test_tl awkish_grammar ["9"];;
+
+(* let test0 = ((make_matcher awkish_grammar accept_all ["ouch"]) = None);; *)
 (* let test1 = ((make_matcher awkish_grammar accept_all ["9"]) = Some []);;
 let test2 = ((make_matcher awkish_grammar accept_all ["9"; "+"; "$"; "1"; "+"]) = Some ["+"]);;
 let test3 = ((make_matcher awkish_grammar accept_empty_suffix ["9"; "+"; "$"; "1"; "+"]) = None);; *)
