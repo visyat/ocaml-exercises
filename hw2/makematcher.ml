@@ -17,17 +17,6 @@ match sym with
 | T x -> x
 | N _ -> failwith "Not a terminal";;
 
-let rec iterate_rules rules trace pred frag = 
-match rules with 
-| [] -> trace 
-| h::t -> iterate_rules t (trace@(iterate_rule_terms h [] pred frag)) pred frag
-and iterate_rule_terms rule trace pred frag = 
-match rule with 
-| [] -> trace
-| h::t when is_terminal h && (List.mem (extract_terminal h) frag) -> trace@[extract_terminal h]
-| h::t when not (is_terminal h) -> iterate_rule_terms t (trace@(iterate_rules (pred (extract_nonterminal h)) [] pred frag)) pred frag
-| h::t -> iterate_rule_terms t trace pred frag;;
-
 (* should output a function of the type fun (accept, frag) -> ... *)
 
 (** --- TESTING --- *)
@@ -64,13 +53,13 @@ let awkish_grammar =
       [T"5"]; [T"6"]; [T"7"]; [T"8"]; [T"9"]]);;
 (* testing helper functions ... *)
 
-let test_tl gram frag = 
+(* let test_tl gram frag = 
   match gram with 
-  | start, pred -> iterate_rules (pred start) [] pred frag;;
+  | start, pred -> iterate_rules (pred start) [] pred frag;; *)
 
-let test0 = test_tl awkish_grammar ["9"];;
+(* let test0 = test_tl awkish_grammar ["9"];; *)
 
-(* let test0 = ((make_matcher awkish_grammar accept_all ["ouch"]) = None);; *)
-(* let test1 = ((make_matcher awkish_grammar accept_all ["9"]) = Some []);;
+let test0 = ((make_matcher awkish_grammar accept_all ["ouch"]) = None);;
+let test1 = ((make_matcher awkish_grammar accept_all ["9"]) = Some []);;
 let test2 = ((make_matcher awkish_grammar accept_all ["9"; "+"; "$"; "1"; "+"]) = Some ["+"]);;
-let test3 = ((make_matcher awkish_grammar accept_empty_suffix ["9"; "+"; "$"; "1"; "+"]) = None);; *)
+let test3 = ((make_matcher awkish_grammar accept_empty_suffix ["9"; "+"; "$"; "1"; "+"]) = None);;
