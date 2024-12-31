@@ -66,3 +66,25 @@ let palindrome list = (list = (rev list));;
 
 let palindrome_test0 = (palindrome [1;2;3;4;5] = false);;
 let palindrome_test1 = (palindrome [1;2;3;2;1] = true);;
+
+(** Run-Length Encoding *)
+let encode list = 
+  let rec encode_help list curr_count curr_val final = 
+  match list with 
+  | [] -> (final@[(curr_count,curr_val)])
+  | h::t when h = curr_val -> encode_help t (curr_count+1) curr_val final
+  | h::t -> encode_help t 1 h (final@[(curr_count,curr_val)])
+  and filter list = 
+  match list with 
+  | [] -> []
+  | h::t -> t 
+  in filter (encode_help list 0 "" []);;
+
+let encode_test0 = (encode ["a"; "a"; "a"; "a"; "b"; "c"; "c"; "a"; "a"; "d"; "e"; "e"; "e"; "e"] = [(4, "a"); (1, "b"); (2, "c"); (2, "a"); (1, "d"); (4, "e")]);;
+
+(** Modified Run-Length Encoding ... *)
+
+type 'a rle =
+  | One of 'a
+  | Many of int * 'a;; 
+
