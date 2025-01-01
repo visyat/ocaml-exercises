@@ -70,14 +70,14 @@ let palindrome_test1 = (palindrome [1;2;3;2;1] = true);;
 (** Run-Length Encoding *)
 let encode list = 
   let rec encode_help list curr_count curr_val final = 
-  match list with 
-  | [] -> (final@[(curr_count,curr_val)])
-  | h::t when h = curr_val -> encode_help t (curr_count+1) curr_val final
-  | h::t -> encode_help t 1 h (final@[(curr_count,curr_val)])
-  and filter list = 
-  match list with 
-  | [] -> []
-  | h::t -> t 
+    match list with 
+    | [] -> (final@[(curr_count,curr_val)])
+    | h::t when h = curr_val -> encode_help t (curr_count+1) curr_val final
+    | h::t -> encode_help t 1 h (final@[(curr_count,curr_val)]) in
+  let filter list = 
+    match list with 
+    | [] -> []
+    | h::t -> t 
   in filter (encode_help list 0 "" []);;
 
 let encode_test0 = (encode ["a"; "a"; "a"; "a"; "b"; "c"; "c"; "a"; "a"; "d"; "e"; "e"; "e"; "e"] = [(4, "a"); (1, "b"); (2, "c"); (2, "a"); (1, "d"); (4, "e")]);;
@@ -88,3 +88,50 @@ type 'a rle =
   | One of 'a
   | Many of int * 'a;; 
 
+let encode list = 
+  let rec encode_help list curr_count curr_val final = 
+    match list with 
+    | [] -> (final@[(curr_count,curr_val)])
+    | h::t when h = curr_val -> encode_help t (curr_count+1) curr_val final
+    | h::t -> encode_help t 1 h (final@[(curr_count,curr_val)]) in
+  let filter list = 
+    match list with 
+    | [] -> []
+    | h::t -> t in
+  let rec modification list fin_list = 
+    match list with 
+    | [] -> fin_list 
+    | h::t -> match h with 
+      | (1,v) -> modification t (fin_list@[One v])
+      | (n,v) -> modification t (fin_list@[Many (n,v)])
+  in modification (filter (encode_help list 0 "" [])) [];;
+
+let mod_encode_test0 = (encode ["a"; "a"; "a"; "a"; "b"; "c"; "c"; "a"; "a"; "d"; "e"; "e"; "e"; "e"] = [Many (4, "a"); One "b"; Many (2, "c"); Many (2, "a"); One "d";
+Many (4, "e")]);;
+
+let duplicate list = 
+  let rec duplicate_help list fin_list = 
+    match list with 
+    | [] -> fin_list
+    | h::t -> duplicate_help t (fin_list@[h;h]) in
+  duplicate_help list [];;
+let duplicate_test0 = (duplicate ["a"; "b"; "c"; "c"; "d"] = ["a"; "a"; "b"; "b"; "c"; "c"; "c"; "c"; "d"; "d"]);;
+
+let split list k = 
+  let rec split_help list k first = 
+    match list with 
+    | [] -> (first, [])
+    | h::t when k = 0 -> (first,h::t)
+    | h::t -> split_help t (k-1) (first@[h]) in
+  split_help list k [];;
+let split_test0 = (split ["a"; "b"; "c"; "d"; "e"; "f"; "g"; "h"; "i"; "j"] 3 = (["a"; "b"; "c"], ["d"; "e"; "f"; "g"; "h"; "i"; "j"]));;
+let split_test1 = (split ["a"; "b"; "c"; "d"] 5 = (["a"; "b"; "c"; "d"], []));;
+
+let remove_at k list = 
+  let rec remove_help k list first = 
+    match list with 
+    | [] -> first 
+    | h::t when k=0 -> first@t 
+    | h::t -> remove_help (k-1) t (first@[h]) in
+  remove_help k list [];;
+let remove_at_test0 = (remove_at 1 ["a"; "b"; "c"; "d"] = ["a"; "c"; "d"]);;
