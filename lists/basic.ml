@@ -83,7 +83,6 @@ let encode list =
 let encode_test0 = (encode ["a"; "a"; "a"; "a"; "b"; "c"; "c"; "a"; "a"; "d"; "e"; "e"; "e"; "e"] = [(4, "a"); (1, "b"); (2, "c"); (2, "a"); (1, "d"); (4, "e")]);;
 
 (** Modified Run-Length Encoding ... *)
-
 type 'a rle =
   | One of 'a
   | Many of int * 'a;; 
@@ -109,6 +108,7 @@ let encode list =
 let mod_encode_test0 = (encode ["a"; "a"; "a"; "a"; "b"; "c"; "c"; "a"; "a"; "d"; "e"; "e"; "e"; "e"] = [Many (4, "a"); One "b"; Many (2, "c"); Many (2, "a"); One "d";
 Many (4, "e")]);;
 
+(** Duplicate Elements of List *)
 let duplicate list = 
   let rec duplicate_help list fin_list = 
     match list with 
@@ -117,6 +117,7 @@ let duplicate list =
   duplicate_help list [];;
 let duplicate_test0 = (duplicate ["a"; "b"; "c"; "c"; "d"] = ["a"; "a"; "b"; "b"; "c"; "c"; "c"; "c"; "d"; "d"]);;
 
+(** Split List into 2 Parts ... *)
 let split list k = 
   let rec split_help list k first = 
     match list with 
@@ -127,6 +128,7 @@ let split list k =
 let split_test0 = (split ["a"; "b"; "c"; "d"; "e"; "f"; "g"; "h"; "i"; "j"] 3 = (["a"; "b"; "c"], ["d"; "e"; "f"; "g"; "h"; "i"; "j"]));;
 let split_test1 = (split ["a"; "b"; "c"; "d"] 5 = (["a"; "b"; "c"; "d"], []));;
 
+(** Remove Kth Element of List ... *)
 let remove_at k list = 
   let rec remove_help k list first = 
     match list with 
@@ -135,3 +137,60 @@ let remove_at k list =
     | h::t -> remove_help (k-1) t (first@[h]) in
   remove_help k list [];;
 let remove_at_test0 = (remove_at 1 ["a"; "b"; "c"; "d"] = ["a"; "c"; "d"]);;
+
+(** Insert Element in List ... *)
+let insert_at_V1 input_val k list = 
+  let rec insert_help list k first = 
+    match list with 
+    | [] -> first@[input_val]
+    | h::t when k=0 -> first@[input_val]@(h::t)
+    | h::t -> insert_help t (k-1) (first@[h]) in
+  insert_help list k [];;
+
+let rec insert_at input_val k list = 
+match list with 
+| [] -> [input_val] 
+| h::t when k=0 -> input_val::(h::t)
+| h::t -> h::(insert_at input_val (k-1) t);;
+
+let insert_test0 = (insert_at "alfa" 1 ["a"; "b"; "c"; "d"] = ["a"; "alfa"; "b"; "c"; "d"]);;
+
+(** Create List Containing all Integers Within Range ... *)
+let rec range a b = 
+match a with 
+| a when a = b -> [b]
+| a -> a::(range (a+1) b);;
+
+let range_test0 = (range 4 9 = [4;5;6;7;8;9]);;
+let range_test1 = (range 1 5 = [1;2;3;4;5]);;
+
+(** Draw N Random Numbers from Set 1..M ... *)
+let rec lotto_select n m = 
+match n with 
+| 0 -> [(Random.int_in_range ~min:1 ~max:m)]
+| n -> (Random.int_in_range ~min:1 ~max:m)::(lotto_select (n-1) m);;
+
+let lotto_select_test0 = lotto_select 6 49;;
+
+(** Random Permutation of Elements in List ... *)
+let permutation list = 
+  let rec index k list = 
+    match list with 
+    | [] -> None 
+    | h::t when k=0 -> Some h 
+    | h::t -> index (k-1) t in 
+  let rand_val = Random.int_in_range ~min:0 ~max:(List.length list-1)
+
+  let rec get_random_indices l = 
+    match l with 
+    | [] -> []
+    | _::t -> (Random.int_in_range ~min:0 ~max:(List.length list - 1))::(get_random_indices t) in
+  let rec populate indices = 
+    match indices with 
+    | [] -> []
+    | h::t -> 
+      match (index h list) with 
+      | Some x -> x::(populate t)
+      | None -> populate t in
+  populate (get_random_indices list);;
+let permutation_test0 = permutation ["a"; "b"; "c"; "d"; "e"; "f"];;
