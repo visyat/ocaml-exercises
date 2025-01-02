@@ -174,23 +174,27 @@ let lotto_select_test0 = lotto_select 6 49;;
 
 (** Random Permutation of Elements in List ... *)
 let permutation list = 
-  let rec index k list = 
+  let get_rand_index list = 
+    match list with 
+    | [] -> -1
+    | [x] -> 0
+    | list -> Random.int_in_range ~min:0 ~max:((List.length list)-1) in
+  let rec get_val list k = 
     match list with 
     | [] -> None 
     | h::t when k=0 -> Some h 
-    | h::t -> index (k-1) t in 
-  let rand_val = Random.int_in_range ~min:0 ~max:(List.length list-1)
-
-  let rec get_random_indices l = 
-    match l with 
+    | _::t -> get_val t (k-1) in
+  let rec pop list k = 
+    match list with 
     | [] -> []
-    | _::t -> (Random.int_in_range ~min:0 ~max:(List.length list - 1))::(get_random_indices t) in
-  let rec populate indices = 
-    match indices with 
-    | [] -> []
-    | h::t -> 
-      match (index h list) with 
-      | Some x -> x::(populate t)
-      | None -> populate t in
-  populate (get_random_indices list);;
+    | h::t when k=0 -> t 
+    | h::t -> h::(pop t (k-1)) in 
+  let rec extract src = 
+    match src with 
+    | [] -> [] 
+    | _ -> let i = get_rand_index src in
+      match (get_val src i) with 
+      | None -> (extract (pop src i))
+      | Some v -> v::(extract (pop src i)) in
+  extract list;;
 let permutation_test0 = permutation ["a"; "b"; "c"; "d"; "e"; "f"];;
