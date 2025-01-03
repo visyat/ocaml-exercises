@@ -16,7 +16,7 @@ let ipl tree =
   ipl_level tree 0;;
 
 let t = T ('a',[T ('f', [T ('g', [])]); T ('c', []);T ('b', [T ('d', []); T ('e', [])])]);;
-let ipl_test0 = ipl t;;
+let ipl_test0 = (ipl t = 9);;
 
 (** Construct Bottom-Up Order Sequence of Tree Nodes *)
 let rec bottom_up tree = 
