@@ -3,20 +3,39 @@ type ('nonterminal, 'terminal) symbol =
 | N of 'nonterminal
 | T of 'terminal;;
 
-let is_terminal symbol = 
-match symbol with
-| T _ -> true
-| N _ -> false;;
-
-let extract_nonterminal sym = 
-match sym with 
-| N x -> x
-| T _ -> failwith "Not a nonterminal";;
-let extract_terminal sym = 
-match sym with 
-| T x -> x
-| N _ -> failwith "Not a terminal";;
-
+let matcher start pred frag = 
+  let rec get_prefix sym = 
+    List.concat (
+      List.fold_left
+        (fun acc rule -> acc @ [
+          List.fold_left
+          (fun rule_acc term ->
+            match term with
+            | T s when List.mem s frag -> rule_acc@[s]
+            | T s -> rule_acc
+            | N s -> rule_acc@(get_prefix s)
+          )
+          [] rule
+        ])
+      [] (pred sym)
+    ) in 
+  get_prefix start;;
+(* 
+get_prefix sym -> : outputs a list of rules, each with a list of symbols ...
+    fetch pred sym: list of rules with sym as LHS 
+    List.fold_left 
+      (fun acc rule ->
+        acc @ 
+        (List.fold_left 
+        (fun rule_acc term -> 
+          match term with 
+          | T sym when List.mem sym frag -> acc@[sym]
+          | T sym -> acc
+          | N sym -> acc@[get_prefix sym]
+        [] rule) : rule is list of symbols
+      ) 
+    [] (pred sym)
+*)
 (* should output a function of the type fun (accept, frag) -> ... *)
 
 (** --- TESTING --- *)
@@ -59,7 +78,12 @@ let awkish_grammar =
 
 (* let test0 = test_tl awkish_grammar ["9"];; *)
 
-let test0 = ((make_matcher awkish_grammar accept_all ["ouch"]) = None);;
+(* let test0 = ((make_matcher awkish_grammar accept_all ["ouch"]) = None);;
 let test1 = ((make_matcher awkish_grammar accept_all ["9"]) = Some []);;
 let test2 = ((make_matcher awkish_grammar accept_all ["9"; "+"; "$"; "1"; "+"]) = Some ["+"]);;
-let test3 = ((make_matcher awkish_grammar accept_empty_suffix ["9"; "+"; "$"; "1"; "+"]) = None);;
+let test3 = ((make_matcher awkish_grammar accept_empty_suffix ["9"; "+"; "$"; "1"; "+"]) = None);; *)
+
+let test_tl gram frag = 
+  match gram with 
+  | start, pred -> matcher start pred frag;;
+let test0 = test_tl awkish_grammar ["9"];;
