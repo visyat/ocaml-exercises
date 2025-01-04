@@ -3,39 +3,19 @@ type ('nonterminal, 'terminal) symbol =
 | N of 'nonterminal
 | T of 'terminal;;
 
-let matcher start pred frag = 
-  let rec get_prefix sym = 
-    List.concat (
-      List.fold_left
-        (fun acc rule -> acc @ [
-          List.fold_left
-          (fun rule_acc term ->
-            match term with
-            | T s when List.mem s frag -> rule_acc@[s]
-            | T s -> rule_acc
-            | N s -> rule_acc@(get_prefix s)
-          )
-          [] rule
-        ])
-      [] (pred sym)
-    ) in 
-  get_prefix start;;
-(* 
-get_prefix sym -> : outputs a list of rules, each with a list of symbols ...
-    fetch pred sym: list of rules with sym as LHS 
-    List.fold_left 
-      (fun acc rule ->
-        acc @ 
-        (List.fold_left 
-        (fun rule_acc term -> 
-          match term with 
-          | T sym when List.mem sym frag -> acc@[sym]
-          | T sym -> acc
-          | N sym -> acc@[get_prefix sym]
-        [] rule) : rule is list of symbols
-      ) 
-    [] (pred sym)
-*)
+(* iterate over the rules of the starting symbol ... 
+   first one that produces valid prefix-suffix such that accept suffix = true returns *)
+(* for each rule implement recursive checking below ... *)
+(* rule -> list of terms 
+   - iterate over terms ...
+    - if term: T -> 
+      - if term is next in frag: append to prefix 
+      - else: do not append 
+    - if term: N -> 
+      - get (pred term): list of rules 
+      - iterate over (pred terms) -> 
+         pass each rule into top-level recursion 
+ *)
 (* should output a function of the type fun (accept, frag) -> ... *)
 
 (** --- TESTING --- *)
@@ -82,8 +62,3 @@ let awkish_grammar =
 let test1 = ((make_matcher awkish_grammar accept_all ["9"]) = Some []);;
 let test2 = ((make_matcher awkish_grammar accept_all ["9"; "+"; "$"; "1"; "+"]) = Some ["+"]);;
 let test3 = ((make_matcher awkish_grammar accept_empty_suffix ["9"; "+"; "$"; "1"; "+"]) = None);; *)
-
-let test_tl gram frag = 
-  match gram with 
-  | start, pred -> matcher start pred frag;;
-let test0 = test_tl awkish_grammar ["9"];;
